@@ -24,16 +24,23 @@ def check_cuda_availability(logger=None):
 def get_ffmpeg_command(file, file_pattern, extract_key, logger=None):
     if logger is None:
         logger = logging.getLogger()
+
+    # Check CUDA availability (assuming the check_cuda_availability function is defined elsewhere)
     cuda_available = check_cuda_availability(logger)
+
+    # Initialize the command with FFmpeg
     command = ["ffmpeg"]
 
+    # Add hardware acceleration if CUDA is available
     if cuda_available:
         command.extend(["-hwaccel", "cuda"])
     else:
         logger.warning("CUDA is not available. Proceeding without CUDA.")
 
+    # Input file
     command.extend(["-i", file])
 
+    # Frame extraction configuration based on 'extract_key'
     if extract_key:
         command.extend(["-vf", "select='eq(pict_type,I)'", "-vsync", "vfr"])
     else:
@@ -44,9 +51,14 @@ def get_ffmpeg_command(file, file_pattern, extract_key, logger=None):
             ]
         )
 
-    command.extend(["-qscale:v", "1", "-qmin", "1", "-c:a", "copy", file_pattern])
+    # Frame rate and quality parameters, similar to your requested command
+    command.extend(["-r", "1", "-q:v", "2"])
+
+    # Output file pattern
+    command.extend([file_pattern])
 
     return command
+
 
 
 def extract_and_remove_similar(
